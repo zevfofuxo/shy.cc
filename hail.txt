@@ -1,0 +1,250 @@
+
+--[[
+    HAIL V2.0
+    Roblox Studio
+    Purple & Black UI
+]]
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+local Theme = {
+    Background = Color3.fromRGB(13, 11, 19),
+    Panel = Color3.fromRGB(23, 19, 32),
+    Secondary = Color3.fromRGB(32, 26, 45),
+    Accent = Color3.fromRGB(145, 85, 235),
+    Text = Color3.fromRGB(245, 240, 255),
+    SubText = Color3.fromRGB(160, 150, 175),
+}
+
+local Config = {
+    WalkSpeed = 16,
+    JumpPower = 50,
+    WalkEnabled = false,
+    JumpEnabled = false,
+    ESPEnabled = false,
+}
+
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "HAIL"
+GUI.ResetOnSpawn = false
+GUI.Parent = PlayerGui
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.fromOffset(600, 400)
+Main.Position = UDim2.new(0.5, -300, 0.5, -200)
+Main.BackgroundColor3 = Theme.Background
+Main.BorderSizePixel = 0
+Main.Parent = GUI
+
+Instance.new("UICorner", Main).CornerRadius =
+    UDim.new(0, 12)
+
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 60)
+Header.BackgroundColor3 = Theme.Panel
+Header.BorderSizePixel = 0
+Header.Parent = Main
+
+Instance.new("UICorner", Header).CornerRadius =
+    UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -30, 1, 0)
+Title.Position = UDim2.fromOffset(20, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "HAIL"
+Title.TextColor3 = Theme.Accent
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 25
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Position = UDim2.fromOffset(0, 60)
+Sidebar.Size = UDim2.new(0, 145, 1, -60)
+Sidebar.BackgroundColor3 = Theme.Panel
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = Main
+
+local Content = Instance.new("Frame")
+Content.Position = UDim2.fromOffset(155, 75)
+Content.Size = UDim2.new(1, -170, 1, -90)
+Content.BackgroundTransparency = 1
+Content.Parent = Main
+
+local List = Instance.new("UIListLayout")
+List.Padding = UDim.new(0, 8)
+List.Parent = Content
+
+local function Clear()
+    for _, item in ipairs(Content:GetChildren()) do
+        if item:IsA("GuiObject") and item ~= List then
+            item:Destroy()
+        end
+    end
+end
+
+local function Button(text, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -5, 0, 42)
+    b.BackgroundColor3 = Theme.Secondary
+    b.Text = text
+    b.TextColor3 = Theme.Text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    b.Parent = Content
+
+    Instance.new("UICorner", b).CornerRadius =
+        UDim.new(0, 7)
+
+    b.MouseButton1Click:Connect(callback)
+    return b
+end
+
+local function Section(text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 30)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Theme.Accent
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 15
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = Content
+end
+
+local function CharacterTab()
+    Clear()
+    Section("CHARACTER")
+
+    Button("WalkSpeed: " .. Config.WalkSpeed, function()
+        Config.WalkSpeed = math.clamp(
+            Config.WalkSpeed + 2, 8, 32
+        )
+    end)
+
+    Button("Toggle WalkSpeed", function()
+        Config.WalkEnabled = not Config.WalkEnabled
+    end)
+
+    Button("JumpPower: " .. Config.JumpPower, function()
+        Config.JumpPower = math.clamp(
+            Config.JumpPower + 5, 25, 75
+        )
+    end)
+
+    Button("Toggle JumpPower", function()
+        Config.JumpEnabled = not Config.JumpEnabled
+    end)
+end
+
+local function VisualsTab()
+    Clear()
+    Section("VISUALS")
+
+    Button("ESP: " .. tostring(Config.ESPEnabled), function()
+        Config.ESPEnabled = not Config.ESPEnabled
+    end)
+
+    Button("ESP Info", function()
+        print("HAIL ESP:", Config.ESPEnabled)
+    end)
+end
+
+local function SettingsTab()
+    Clear()
+    Section("SETTINGS")
+
+    Button("Reset Character", function()
+        Config.WalkSpeed = 16
+        Config.JumpPower = 50
+        Config.WalkEnabled = false
+        Config.JumpEnabled = false
+    end)
+
+    Button("Close HAIL", function()
+        GUI:Destroy()
+    end)
+end
+
+local function Tab(name, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -10, 0, 38)
+    b.BackgroundColor3 = Theme.Secondary
+    b.Text = name
+    b.TextColor3 = Theme.Text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    b.Parent = Sidebar
+
+    Instance.new("UICorner", b).CornerRadius =
+        UDim.new(0, 7)
+
+    b.MouseButton1Click:Connect(callback)
+end
+
+local SidebarList = Instance.new("UIListLayout")
+SidebarList.Padding = UDim.new(0, 8)
+SidebarList.Parent = Sidebar
+
+Tab("Character", CharacterTab)
+Tab("Visuals", VisualsTab)
+Tab("Settings", SettingsTab)
+
+CharacterTab()
+
+local function UpdateCharacter()
+    local Character = Player.Character
+    if not Character then return end
+
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    if not Humanoid then return end
+
+    Humanoid.WalkSpeed = Config.WalkEnabled
+        and Config.WalkSpeed or 16
+
+    Humanoid.UseJumpPower = true
+    Humanoid.JumpPower = Config.JumpEnabled
+        and Config.JumpPower or 50
+end
+
+game:GetService("RunService").Heartbeat:Connect(UpdateCharacter)
+
+local dragging = false
+local dragStart
+local startPosition
+
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPosition = Main.Position
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType ==
+        Enum.UserInputType.MouseMovement then
+
+        local delta = input.Position - dragStart
+
+        Main.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+print("HAIL V2.0 carregado!")
